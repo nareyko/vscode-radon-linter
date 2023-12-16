@@ -1,3 +1,4 @@
+![VSCode Radon Linter](./vscode-radon-linter.png)
 # vscode-radon-linter
 
 ## Description
