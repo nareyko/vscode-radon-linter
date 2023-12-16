@@ -77,8 +77,7 @@
           "items": {
             "type": "string"
           },
-          "default": [
-          ],
+          "default": [],
           "description": "Glob patterns for files to exclude."
         },
         "vscodeRadonLinter.ignoreFolders": {
