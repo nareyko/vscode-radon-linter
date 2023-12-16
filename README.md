@@ -40,11 +40,34 @@ The extension is easy to use and integrates seamlessly with Visual Studio Code, 
 - Debug mode that can be enabled to log the Radon runs
 - Seamless integration with Visual Studio Code
 
+## Example
+
+Once the extension is installed and active, it will automatically lint your Python code using Radon and display potential issues in the Problems tab of Visual Studio Code. Here is an example of what you might see:
+
+![Example Issues](./example.png)
+
+In this example, the Problems tab shows the issues detected by the vscode-radon-linter extension. Each issue includes the type of the block (e.g., "function", "method", "class"), the name of the block, the cyclomatic complexity of the block, and the line number where the block starts. You can click on an issue to navigate directly to the corresponding line in your code.
+
 ## Requirements
 
 - Visual Studio Code version 1.85.0 or higher
 - Python
 - Radon
+
+## Installation
+
+Follow these steps to install the extension in Visual Studio Code:
+
+1. Open Visual Studio Code.
+2. Click on the Extensions view icon on the Sidebar (or press `Ctrl+Shift+X` to open it).
+3. In the Extensions view, enter the name of the extension (vscode-radon-linter) in the search box and press `Enter`.
+4. From the list of extensions, find the one you want to install and click on the Install button.
+
+Here is an image to help you understand the process:
+
+![Installation Process](./installation.png)
+
+After the installation is complete, you may need to reload Visual Studio Code for the changes to take effect.
 
 ## About Radon
 
@@ -80,6 +103,17 @@ This extension contributes the following settings:
 - `vscodeRadonLinter.minComplexity`: The minimum complexity level for Radon linter. Default is 5.
 - `vscodeRadonLinter.debug`: Enable or disable debug mode for Radon linter. Default is false.
 - `vscodeRadonLinter.radonExecutable`: Path to the Radon executable with arguments. Default is "radon cc -j".
+
+To access these settings, follow these steps:
+
+1. Open Visual Studio Code.
+2. Click on the gear icon in the lower left corner to open the main menu.
+3. Click on "Settings".
+4. In the search box at the top of the Settings tab, enter "vscodeRadonLinter" to filter the settings.
+
+Here is an image to help you understand the process:
+
+![Settings](./settings.png)
 
 ## Commands
 
