@@ -76,6 +76,27 @@ export function activate(context: vscode.ExtensionContext) {
   });
   // Process all workspace folders for linting
   processAllWorkspaceFolders(diagnosticCollection);
+
+  // Check if the warning message should be shown
+  if (getConfig().get("showRadonPathWarning")) {
+    // Show an information message asking the user to recheck the path to radon
+    vscode.window
+      .showInformationMessage(
+        "Please recheck the path to the radon executable. It should not contain command line arguments.",
+        "Check Now",
+        "Don't Show Again"
+      )
+      .then((selection) => {
+        if (selection === "Check Now") {
+          // Open the settings when the user clicks on "Check Now"
+          vscode.commands.executeCommand("workbench.action.openSettings", "radonExecutable");
+        } else if (selection === "Don't Show Again") {
+          // Set 'showRadonPathWarning' to false when the user clicks on "Don't Show Again"
+          const config = vscode.workspace.getConfiguration("vscodeRadonLinter");
+          config.update("showRadonPathWarning", false, vscode.ConfigurationTarget.Global);
+        }
+      });
+  }
 }
 
 // Function to deactivate the extension
