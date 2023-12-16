@@ -49,6 +49,19 @@
           "default": 5,
           "description": "The minimum complexity level for Radon linter."
         },
+        "vscodeRadonLinter.minComplexityRank": {
+          "type": "string",
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F"
+          ],
+          "default": "C",
+          "description": "The minimum complexity rank for Radon linter."
+        },
         "vscodeRadonLinter.debug": {
           "type": "boolean",
           "default": false,
@@ -56,8 +69,35 @@
         },
         "vscodeRadonLinter.radonExecutable": {
           "type": "string",
-          "default": "radon cc -j",
+          "default": "radon",
           "description": "Path to the Radon executable with arguments."
+        },
+        "vscodeRadonLinter.excludeFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/!(*.py)"
+          ],
+          "description": "Glob patterns for files to exclude."
+        },
+        "vscodeRadonLinter.ignoreFolders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/venv/**",
+            "**/.venv/**"
+          ],
+          "description": "Glob patterns for folders to ignore."
+        },
+        "vscodeRadonLinter.showRadonPathWarning": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a warning message to recheck the path to the radon executable."
         }
       }
     }

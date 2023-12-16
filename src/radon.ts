@@ -17,29 +17,35 @@ import { RadonOutput } from "./radonTypes";
 // Function to execute Radon and return the output
 // It takes the target path and the Radon executable as parameters
 // Returns a promise that resolves with the Radon output
-async function executeRadon(targetPath: string, radonExecutable: string): Promise<RadonOutput> {
+async function executeRadon(
+  targetPath: string,
+  radonExecutable: string,
+  minComplexityRank: string,
+  excludeFiles: string[] = [],
+  ignoreFolders: string[] = []
+): Promise<RadonOutput> {
   return new Promise((resolve, reject) => {
-    // Execute the Radon command
-    childProcess.exec(`${radonExecutable} ${targetPath}`, (error, stdout) => {
-      // If there's an error executing the command, reject the promise
-      if (error) {
-        reject(new Error(`Could not lint due to an error: ${error}`));
-        return;
-      }
+    const _excludeFiles = excludeFiles.map((pattern) => `--exclude ${pattern}`).join(" ");
+    const _ignoreFolders = ignoreFolders.map((pattern) => `--ignore ${pattern}`).join(" ");
 
-      try {
-        // Parse the stdout as JSON to get the Radon output
-        const radonOutput: RadonOutput = JSON.parse(stdout);
-        // Resolve the promise with the Radon output
-        resolve(radonOutput);
-      } catch (e) {
-        // If there's an error parsing the output, reject the promise
-        reject(new Error(`Could not parse Radon output due to an error: ${e}`));
+    childProcess.exec(
+      `${radonExecutable} cc -n ${minComplexityRank} -j ${_excludeFiles} ${_ignoreFolders} ${targetPath}`,
+      (error, stdout) => {
+        if (error) {
+          reject(new Error(`Could not lint due to an error: ${error}`));
+          return;
+        }
+
+        try {
+          const radonOutput: RadonOutput = JSON.parse(stdout);
+          resolve(radonOutput);
+        } catch (e) {
+          reject(new Error(`Could not parse Radon output due to an error: ${e}`));
+        }
       }
-    });
+    );
   });
 }
-
 // Function to process Radon output and update the diagnostic collection
 // It takes the Radon output, target path, a boolean indicating if the target is a file, and the diagnostic collection as parameters
 async function processRadonOutput(
@@ -72,21 +78,23 @@ export async function processRadon(
   diagnosticCollection: vscode.DiagnosticCollection,
   isFile: boolean
 ) {
-  // If debug mode is on, log the Radon run
   if (getConfig().get<boolean>("debug")) {
     console.log(`Running Radon on ${isFile ? "file" : "workspace"}: ${targetPath}`);
   }
 
-  // Get the Radon executable from the configuration, or use "radon cc -j" as a default
-  const radonExecutable = getConfig().get<string>("radonExecutable") || "radon cc -j";
+  const radonExecutable = getConfig().get<string>("radonExecutable") || "radon";
+  const minComplexityRank = getConfig().get<string>("minComplexityRank") || "C";
+  const excludeFiles = getConfig().get<string[]>("excludeFiles") || ["**/!(*.py)"];
+  const ignoreFolders = getConfig().get<string[]>("ignoreFolders") || [
+    "**/node_modules/**",
+    "**/venv/**",
+    "**/.venv/**",
+  ];
 
   try {
-    // Execute Radon and get the output
-    const radonOutput = await executeRadon(targetPath, radonExecutable);
-    // Process the Radon output and update the diagnostic collection
+    const radonOutput = await executeRadon(targetPath, radonExecutable, minComplexityRank, excludeFiles, ignoreFolders);
     await processRadonOutput(radonOutput, targetPath, isFile, diagnosticCollection);
   } catch (error) {
-    // If there's an error, log it
     console.error((error as Error).message);
   }
 }
