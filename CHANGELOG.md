@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.2] - 2022-XX-XX
+
+### Changed
+
+- Modified default ignore patterns in `package.json`.
+
+### Updated
+
+- Improved error handling in `src/diagnostics.ts`.
+- Updated the `createDiagnostics` function in `src/diagnostics.ts` to handle different types of `radonOutput`.
+  - Added a check to ensure `radonOutput` is an array before processing.
+  - Added handling for `radonOutput` being an object with an `error` property.
+  - In case of an error, a diagnostic with severity `Error` is created, with the line number extracted from the error message.
+
+### Fixed
+
+- Fixed the order of parameters in the Radon executable command in `src/radon.ts`.
+- Added logging for debugging in `src/radon.ts`.
+- Fixed handling of file paths in `src/radon.ts`.
+
 ## [1.0.1] - 2022-12-16
 
 ### Added

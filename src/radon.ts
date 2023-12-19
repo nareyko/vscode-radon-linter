@@ -28,22 +28,22 @@ async function executeRadon(
     const _excludeFiles = excludeFiles.map((pattern) => `--exclude ${pattern}`).join(" ");
     const _ignoreFolders = ignoreFolders.map((pattern) => `--ignore ${pattern}`).join(" ");
 
-    childProcess.exec(
-      `${radonExecutable} cc -n ${minComplexityRank} -j ${_excludeFiles} ${_ignoreFolders} ${targetPath}`,
-      (error, stdout) => {
-        if (error) {
-          reject(new Error(`Could not lint due to an error: ${error}`));
-          return;
-        }
+    const executableString = `${radonExecutable} cc  -j -n ${minComplexityRank} ${_excludeFiles} ${_ignoreFolders} ${targetPath}`;
+    console.log(executableString); // Log the executable string
 
-        try {
-          const radonOutput: RadonOutput = JSON.parse(stdout);
-          resolve(radonOutput);
-        } catch (e) {
-          reject(new Error(`Could not parse Radon output due to an error: ${e}`));
-        }
+    childProcess.exec(executableString, (error, stdout) => {
+      if (error) {
+        reject(new Error(`Could not lint due to an error: ${error}`));
+        return;
       }
-    );
+
+      try {
+        const radonOutput: RadonOutput = JSON.parse(stdout);
+        resolve(radonOutput);
+      } catch (e) {
+        reject(new Error(`Could not parse Radon output due to an error: ${e}`));
+      }
+    });
   });
 }
 // Function to process Radon output and update the diagnostic collection
@@ -55,8 +55,10 @@ async function processRadonOutput(
   diagnosticCollection: vscode.DiagnosticCollection
 ) {
   // Get the file paths from the Radon output
-  const filePaths = isFile ? [targetPath] : Object.keys(radonOutput);
-
+  let filePaths = isFile ? [targetPath] : Object.keys(radonOutput);
+  if (!Array.isArray(filePaths)) {
+    filePaths = [filePaths];
+  }
   // For each file path
   for (const filePath of filePaths) {
     try {
@@ -92,8 +94,11 @@ export async function processRadon(
   ];
 
   try {
+    console.log("Start executeRadon", targetPath, radonExecutable, minComplexityRank, excludeFiles, ignoreFolders);
     const radonOutput = await executeRadon(targetPath, radonExecutable, minComplexityRank, excludeFiles, ignoreFolders);
+    console.log("Start processRadonOutput", targetPath, isFile);
     await processRadonOutput(radonOutput, targetPath, isFile, diagnosticCollection);
+    console.log("End processRadonOutput");
   } catch (error) {
     console.error((error as Error).message);
   }
