@@ -2,7 +2,7 @@
   "name": "vscode-radon-linter",
   "displayName": "vscode-radon-linter",
   "description": "This Visual Studio Code extension provides Python linting functionality using the Radon library. Once installed, the extension automatically checks Python files for potential issues and displays them in the Problems tab. This helps developers identify and fix issues such as code complexity, maintainability, and other potential problems that could lead to bugs or make the code harder to read and maintain. The extension is easy to use and integrates seamlessly with Visual Studio Code, making it a valuable tool for Python developers who want to ensure their code is clean, efficient, and follows best practices.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "icon": "vscode-radon-linter128x128.png",
   "keywords": [
     "python",
@@ -86,9 +86,7 @@
             "type": "string"
           },
           "default": [
-            "**/node_modules/**",
-            "**/venv/**",
-            "**/.venv/**"
+            "node_modules,venv,.venv,env,.env"
           ],
           "description": "Glob patterns for folders to ignore."
         },
