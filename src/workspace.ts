@@ -11,8 +11,42 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import { processRadon } from "./radon";
+import { getConfig } from "./config";
 
-// Function to process a workspace folder
+/**
+ * This function handles Python documents.
+ *
+ * @param {vscode.TextDocument} document - The document to handle.
+ * @param {vscode.DiagnosticCollection} diagnosticCollection - The collection of diagnostics.
+ * @param {string} action - The action performed on the document.
+ *
+ * @returns {Promise<void>} - The function returns a Promise that resolves to void.
+ */
+export async function handlePythonDocument(
+  document: vscode.TextDocument, // The document to handle
+  diagnosticCollection: vscode.DiagnosticCollection, // The collection of diagnostics
+  action: string // The action performed on the document
+): Promise<void> {
+  // If the document is a Python file
+  if (document.languageId === "python") {
+    // If debug mode is on, log the linting action
+    if (getConfig().get<boolean>("debug")) {
+      console.log(`Linting ${action} file: ${document.uri}`);
+    }
+
+    // Process the file for linting
+    processFile(document.uri, diagnosticCollection);
+  }
+}
+
+/**
+ * This function processes a workspace folder.
+ *
+ * @param {vscode.WorkspaceFolder} workspaceFolder - The workspace folder to process.
+ * @param {vscode.DiagnosticCollection} diagnosticCollection - The collection of diagnostics.
+ *
+ * @returns {Promise<void>} - The function returns a Promise that resolves to void.
+ */
 export async function processWorkspace(
   workspaceFolder: vscode.WorkspaceFolder, // The workspace folder to process
   diagnosticCollection: vscode.DiagnosticCollection // The collection of diagnostics
@@ -23,7 +57,14 @@ export async function processWorkspace(
   processRadon(workspacePath, diagnosticCollection, false);
 }
 
-// Function to process a file
+/**
+ * This function processes a file.
+ *
+ * @param {vscode.Uri} file - The file to process.
+ * @param {vscode.DiagnosticCollection} diagnosticCollection - The collection of diagnostics.
+ *
+ * @returns {Promise<void>} - The function returns a Promise that resolves to void.
+ */
 export async function processFile(
   file: vscode.Uri, // The file to process
   diagnosticCollection: vscode.DiagnosticCollection // The collection of diagnostics
@@ -34,25 +75,34 @@ export async function processFile(
   processRadon(filePath, diagnosticCollection, true);
 }
 
-// Function to process Python files
+/// Function to process Python files
+/**
+ * This function processes Python files.
+ *
+ * @param {vscode.TextDocument[]} files - The files to process.
+ * @param {vscode.DiagnosticCollection} diagnosticCollection - The collection of diagnostics.
+ */
 export function processPythonFiles(
   files: vscode.TextDocument[], // The files to process
   diagnosticCollection: vscode.DiagnosticCollection // The collection of diagnostics
 ) {
-  // For each file
-  for (const file of files) {
-    // If the file is a Python file
-    if (file.languageId === "python") {
-      // Process the file
-      processFile(file.uri, diagnosticCollection);
-    }
-  }
+  // Filter out non-Python files and process each Python file
+  Array.from(files)
+    .filter((file) => file.languageId === "python")
+    .forEach((file) => processFile(file.uri, diagnosticCollection));
 }
 
 // Function to process all workspace folders
+/**
+ * This function processes all workspace folders.
+ *
+ * @param {vscode.DiagnosticCollection} diagnosticCollection - The collection of diagnostics.
+ *
+ * @returns {Promise<void>} - The function returns a Promise that resolves to void.
+ */
 export function processAllWorkspaceFolders(
   diagnosticCollection: vscode.DiagnosticCollection // The collection of diagnostics
-) {
+): Promise<void> {
   // Get the workspace folders
   const workspaceFolders = vscode.workspace.workspaceFolders;
 
@@ -61,13 +111,11 @@ export function processAllWorkspaceFolders(
     // Show an error message
     vscode.window.showErrorMessage("No workspace is opened");
   } else {
-    // For each workspace folder
-    for (const workspaceFolder of workspaceFolders) {
-      // Process the workspace folder
-      processWorkspace(workspaceFolder, diagnosticCollection);
-    }
+    // Process each workspace folder
+    workspaceFolders.forEach((workspaceFolder) => processWorkspace(workspaceFolder, diagnosticCollection));
   }
 
   // Process all opened Python files
   processPythonFiles(Array.from(vscode.workspace.textDocuments), diagnosticCollection);
+  return Promise.resolve();
 }

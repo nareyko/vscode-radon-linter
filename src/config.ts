@@ -10,17 +10,10 @@
  */
 import * as vscode from "vscode";
 
-// Get the initial configuration for the vscodeRadonLinter extension
-let config = vscode.workspace.getConfiguration("vscodeRadonLinter");
-
-// Function to get the current configuration
+// Define a function to get the current configuration
 export function getConfig() {
-  // Return the current configuration
-  return config;
-}
-
-// Function to reload the configuration
-export function reloadConfig() {
-  // Update the configuration by getting the latest from the workspace
-  config = vscode.workspace.getConfiguration("vscodeRadonLinter");
+  // Use the getConfiguration method from the vscode.workspace module
+  // to get the configuration for the extension with the ID "vscodeRadonLinter"
+  // The getConfiguration method returns an object with the current configuration settings
+  return vscode.workspace.getConfiguration("vscodeRadonLinter");
 }

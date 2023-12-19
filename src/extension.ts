@@ -9,28 +9,9 @@
  * Licensed under the MIT License. See LICENSE.txt in the project root for license information.
  */
 import * as vscode from "vscode";
-import { getConfig, reloadConfig } from "./config";
-import { processFile, processAllWorkspaceFolders } from "./workspace";
-
-// Function to handle Python documents
-function handlePythonDocument(
-  document: vscode.TextDocument, // The document to handle
-  diagnosticCollection: vscode.DiagnosticCollection, // The collection of diagnostics
-  action: string // The action performed on the document
-) {
-  // If the document is not a Python file, return
-  if (document.languageId !== "python") {
-    return;
-  }
-
-  // If debug mode is on, log the linting action
-  if (getConfig().get<boolean>("debug")) {
-    console.log(`Linting ${action} file: ${document.uri}`);
-  }
-
-  // Process the file for linting
-  processFile(document.uri, diagnosticCollection);
-}
+import { getConfig } from "./config";
+import { processAllWorkspaceFolders, handlePythonDocument } from "./workspace";
+import { PromiseQueue } from "./promisequeue";
 
 // Function to activate the extension
 export function activate(context: vscode.ExtensionContext) {
@@ -39,43 +20,41 @@ export function activate(context: vscode.ExtensionContext) {
   // Add the diagnostic collection to the context's subscriptions
   context.subscriptions.push(diagnosticCollection);
 
+  // Create a new PromiseQueue
+  const queue = new PromiseQueue();
+  // Function to process all workspace folders and add to queue
+  const processWorkspaces = () => queue.enqueue(() => processAllWorkspaceFolders(diagnosticCollection));
+
+  // Process all workspace folders for linting
+  processWorkspaces();
+
   // Register a command for linting
-  const disposable = vscode.commands.registerCommand("extension.vscodeRadonLinter.lint", () => {
-    // Process all workspace folders for linting
-    processAllWorkspaceFolders(diagnosticCollection);
-  });
+  const disposable = vscode.commands.registerCommand("extension.vscodeRadonLinter.lint", processWorkspaces);
 
   // Add the command to the context's subscriptions
   context.subscriptions.push(disposable);
 
-  // Handle document change events
-  vscode.workspace.onDidChangeTextDocument((event) => {
-    // Handle the changed document
-    handlePythonDocument(event.document, diagnosticCollection, "changed");
-  });
+  // Function to handle document events and add to queue
+  const handleDocumentEvent = (document: vscode.TextDocument, eventType: string) =>
+    queue.enqueue(() => handlePythonDocument(document, diagnosticCollection, eventType));
+
+  vscode.workspace.onDidChangeTextDocument((event) => handleDocumentEvent(event.document, "changed"));
 
   // Handle document open events
-  vscode.workspace.onDidOpenTextDocument((document) => {
-    // Handle the opened document
-    handlePythonDocument(document, diagnosticCollection, "opened");
-  });
+  vscode.workspace.onDidOpenTextDocument((document) => handleDocumentEvent(document, "opened"));
 
   // Handle configuration change events
   vscode.workspace.onDidChangeConfiguration((event) => {
     // If the configuration change affects the linter
     if (event.affectsConfiguration("vscodeRadonLinter")) {
-      // Reload the configuration
-      reloadConfig();
       // If debug mode is on, log the configuration change
       if (getConfig().get<boolean>("debug")) {
         console.log("Configuration changed, reloading...");
       }
       // Re-process all workspace folders with the new configuration
-      processAllWorkspaceFolders(diagnosticCollection);
+      processWorkspaces();
     }
   });
-  // Process all workspace folders for linting
-  processAllWorkspaceFolders(diagnosticCollection);
 
   // Check if the warning message should be shown
   if (getConfig().get("showRadonPathWarning")) {

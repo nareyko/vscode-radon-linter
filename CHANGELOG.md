@@ -1,6 +1,59 @@
 # Changelog
 
-## [1.0.2] - 2022-XX-XX
+## [1.0.3] - 2022-12-19
+
+### Changed
+
+- Simplified the configuration retrieval in `src/config.ts` and refactored the `createDiagnostics` function in `src/diagnostics.ts` to improve readability and maintainability. The `createDiagnostics` function now also takes into account the `showErrors` configuration setting when creating diagnostic messages from errors.
+- Simplified `extension.ts` by moving the `handlePythonDocument` function to `workspace.ts` and using the `processWorkspaces` function for linting and handling of configuration change events. The handling of document change and open events now uses the `handleDocumentEvent` function.
+- Improved documentation and refactored `executeRadon` function in `src/radon.ts` to construct command arguments in a more structured way. Improved error handling in `executeRadon` and `processRadonOutput` functions. The `processRadonOutput` function now handles file paths in a more robust way.
+- In `src/radonTypes.ts`, the `RadonBlock` and `RadonOutput` definitions have been changed from interfaces to types, allowing them to be used in more flexible ways, such as in union types or mapped types. Added semicolons at the end of these type definitions.
+- Refactored the `processPythonFiles` and `processAllWorkspaceFolders` functions to use the `Array.filter` and `Array.forEach` methods instead of a for loop. The `processAllWorkspaceFolders` function now also returns a Promise that resolves to void.
+
+### Removed
+
+- From `extension.ts`:
+
+  - Removed the inline definition of `handlePythonDocument` function.
+  - Removed `reloadConfig` import as it's no longer used.
+
+- Replaced direct calls to `processAllWorkspaceFolders` and `handlePythonDocument` with a new queue-based approach.
+
+- In `processRadonOutput` function:
+
+  - Removed unnecessary array check. The function now assumes that the `filePaths` variable is always an array.
+
+- Cleaned up `processWorkspace`, `processFile`, `processPythonFiles`, and `processAllWorkspaceFolders` functions:
+
+### Added
+
+- Introduced a new configuration option "vscodeRadonLinter.showErrors" in `package.json`. This option, when set to true, will display errors identified by the Radon tool.
+- Added "\*.pyx" and "cpython" to the default glob patterns for files and folders to exclude in `package.json`.
+
+- Added new imports to `extension.ts`:
+
+  - `handlePythonDocument` from `workspace.ts`
+  - `PromiseQueue`
+
+- Introduced a new PromiseQueue to handle tasks in a queue.
+
+- Added new functions:
+
+  - `processWorkspaces` to process all workspace folders and add them to the queue.
+  - `handleDocumentEvent` to handle document events and add them to the queue.
+  - `handlePythonDocument` to handle Python documents. This function takes a document, a diagnostic collection, and an action performed on the document as parameters. It checks if the document is a Python file and if so, it processes the file for linting.
+
+- Added detailed comments to the following functions explaining their purpose, parameters, and return value:
+
+  - `processRadonOutput`
+  - `processWorkspace`
+  - `processFile`
+  - `processPythonFiles`
+  - `processAllWorkspaceFolders`
+
+- Enhanced logging in `processRadon` function. The function now logs the target path if the "debug" configuration option is set to true.
+
+## [1.0.2] - 2022-12-19
 
 ### Changed
 
