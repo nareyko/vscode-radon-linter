@@ -25,9 +25,6 @@ export function activate(context: vscode.ExtensionContext) {
   // Function to process all workspace folders and add to queue
   const processWorkspaces = () => queue.enqueue(() => processAllWorkspaceFolders(diagnosticCollection));
 
-  // Process all workspace folders for linting
-  processWorkspaces();
-
   // Register a command for linting
   const disposable = vscode.commands.registerCommand("extension.vscodeRadonLinter.lint", processWorkspaces);
 
@@ -55,7 +52,8 @@ export function activate(context: vscode.ExtensionContext) {
       processWorkspaces();
     }
   });
-
+  // Process all workspace folders for linting
+  processWorkspaces();
   // Check if the warning message should be shown
   if (getConfig().get("showRadonPathWarning")) {
     // Show an information message asking the user to recheck the path to radon
@@ -79,4 +77,5 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // Function to deactivate the extension
-export function deactivate() {}
+// Remove the empty function declaration
+// export function deactivate() {}

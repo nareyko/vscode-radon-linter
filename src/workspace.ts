@@ -82,14 +82,16 @@ export async function processFile(
  * @param {vscode.TextDocument[]} files - The files to process.
  * @param {vscode.DiagnosticCollection} diagnosticCollection - The collection of diagnostics.
  */
-export function processPythonFiles(
+export async function processPythonFiles(
   files: vscode.TextDocument[], // The files to process
   diagnosticCollection: vscode.DiagnosticCollection // The collection of diagnostics
-) {
+): Promise<void> {
   // Filter out non-Python files and process each Python file
-  Array.from(files)
-    .filter((file) => file.languageId === "python")
-    .forEach((file) => processFile(file.uri, diagnosticCollection));
+  await Promise.all(
+    Array.from(files)
+      .filter((file) => file.languageId === "python")
+      .map((file) => processFile(file.uri, diagnosticCollection))
+  );
 }
 
 // Function to process all workspace folders
@@ -100,7 +102,7 @@ export function processPythonFiles(
  *
  * @returns {Promise<void>} - The function returns a Promise that resolves to void.
  */
-export function processAllWorkspaceFolders(
+export async function processAllWorkspaceFolders(
   diagnosticCollection: vscode.DiagnosticCollection // The collection of diagnostics
 ): Promise<void> {
   // Get the workspace folders
@@ -112,7 +114,9 @@ export function processAllWorkspaceFolders(
     vscode.window.showErrorMessage("No workspace is opened");
   } else {
     // Process each workspace folder
-    workspaceFolders.forEach((workspaceFolder) => processWorkspace(workspaceFolder, diagnosticCollection));
+    await Promise.all(
+      workspaceFolders.map((workspaceFolder) => processWorkspace(workspaceFolder, diagnosticCollection))
+    );
   }
 
   // Process all opened Python files

@@ -51,7 +51,7 @@ function createDiagnosticFromError(radonOutput: any, showErrors: boolean): vscod
     let line = 0;
 
     // Try to match the error message with a regular expression to extract the line number.
-    const errorLineMatch = (radonOutput["error"] as string).match(/line (\d+)/);
+    const errorLineMatch = /line (\d+)/.exec(radonOutput["error"] as string);
 
     // If a match was found, parse the line number from the match and subtract 1 (because line numbers in vscode start from 0).
     if (errorLineMatch) {
@@ -80,10 +80,10 @@ function createDiagnosticFromError(radonOutput: any, showErrors: boolean): vscod
  * @param radonOutput - The output from the radon tool, which can be an array of RadonBlock objects or an error object.
  * @returns An array of vscode.Diagnostic objects representing the complex blocks or the error in the radon output.
  */
-export function createDiagnostics(radonOutput: RadonBlock[] | any): vscode.Diagnostic[] {
+export function createDiagnostics(radonOutput: RadonBlock[] | null): vscode.Diagnostic[] {
   // Get the showErrors and minComplexity settings from the configuration.
   const showErrors = getConfig().get<boolean>("showErrors") ?? true;
-  const minComplexity = getConfig().get<number>("minComplexity") || 0;
+  const minComplexity = getConfig().get<number>("minComplexity") ?? 0;
 
   // If radonOutput is an array (i.e., it's an array of RadonBlock objects)...
   if (Array.isArray(radonOutput)) {

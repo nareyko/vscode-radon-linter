@@ -56,7 +56,7 @@ async function executeRadon(
     childProcess.execFile(radonExecutable, args, (error, stdout) => {
       if (error) {
         // If there is an error executing the command, reject the promise with an error
-        reject(new Error(`Could not lint due to an error: ${error}`));
+        reject(new Error(`Could not lint due to an error: ${(error as Error).message}`));
         return;
       }
 
@@ -120,16 +120,16 @@ export async function processRadon(
   }
 
   // Get the path to the Radon executable from the configuration, or use "radon" if it's not set
-  const radonExecutable = getConfig().get<string>("radonExecutable") || "radon";
+  const radonExecutable = getConfig().get<string>("radonExecutable") ?? "radon";
 
   // Get the minimum complexity rank from the configuration, or use "C" if it's not set
-  const minComplexityRank = getConfig().get<string>("minComplexityRank") || "C";
+  const minComplexityRank = getConfig().get<string>("minComplexityRank") ?? "C";
 
   // Get the list of file patterns to exclude from the configuration, or use ["*.pyx"] if it's not set
-  const excludeFiles = getConfig().get<string[]>("excludeFiles") || ["*.pyx"];
+  const excludeFiles = getConfig().get<string[]>("excludeFiles") ?? ["*.pyx"];
 
   // Get the list of folders to ignore from the configuration, or use ["node_modules,venv,.venv,env,.venv"] if it's not set
-  const ignoreFolders = getConfig().get<string[]>("ignoreFolders") || ["node_modules,venv,.venv,env,.venv"];
+  const ignoreFolders = getConfig().get<string[]>("ignoreFolders") ?? ["node_modules,venv,.venv,env,.venv"];
 
   try {
     // Run Radon on the target path with the given parameters and get the output
